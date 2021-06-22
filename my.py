@@ -33,7 +33,7 @@ default_args = {
     # 'trigger_rule': 'all_success'
 }
 with DAG(
-    'tutorial',
+    'spark_load',
     default_args=default_args,
     description='Parquet -> Avro DAG',
     schedule_interval=timedelta(days=1),
