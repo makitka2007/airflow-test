@@ -47,8 +47,8 @@ with DAG(
         application='/opt/airflow/airflow-test_2.12-0.1.jar',
         java_class='Load',
         packages='org.apache.spark:spark-avro_2.12:3.1.1',
-        application_args=['/home/nikita/infile.parquet', '/home/nikita/outfile.avro'],
-        spark_binary='/opt/airflow/spark-3.1.1-bin-hadoop3.2/bin/spark-submit',
+        application_args=['/opt/airflow/infile.parquet', '/opt/airflow/outfile.avro'],
+        spark_binary='spark-submit',
         conn_id='spark_local'
     )
 
