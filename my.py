@@ -10,9 +10,9 @@ from airflow.utils.dates import days_ago
 # These args will get passed on to each operator
 # You can override them on a per-task basis during operator initialization
 default_args = {
-    'owner': 'airflow',
+    'owner': 'Nikita',
     'depends_on_past': False,
-    'email': ['airflow@example.com'],
+    'email': ['Nikita_Zaletov@epam.com'],
     'email_on_failure': False,
     'email_on_retry': False,
     'retries': 1,
@@ -34,54 +34,24 @@ default_args = {
 with DAG(
     'tutorial',
     default_args=default_args,
-    description='A simple tutorial DAG',
+    description='Parquet -> Avro DAG',
     schedule_interval=timedelta(days=1),
     start_date=days_ago(2),
     tags=['example'],
 ) as dag:
 
     # t1, t2 and t3 are examples of tasks created by instantiating operators
-    t1 = BashOperator(
-        task_id='print_date',
-        bash_command='date',
+    t1 = SparkSubmitOperator(
+        task_id='run_spark',
+        application='/opt/airflow/airflow-test_2.12-0.1.jar',
+        java_class='Load',
+        packages='org.apache.spark:spark-avro_2.12:3.1.1',
+        application_args=['/home/nikita/infile.parquet', '/home/nikita/outfile.avro'],
+        spark_binary='/opt/airflow/spark-3.1.1-bin-hadoop3.2/bin/spark-submit',
+        conn_id='spark_local'
     )
 
-    t2 = BashOperator(
-        task_id='sleep',
-        depends_on_past=False,
-        bash_command='sleep 5',
-        retries=3,
-    )
-    t1.doc_md = dedent(
-        """\
-    #### Task Documentation
-    You can document your task using the attributes `doc_md` (markdown),
-    `doc` (plain text), `doc_rst`, `doc_json`, `doc_yaml` which gets
-    rendered in the UI's Task Instance Details page.
-    ![img](http://montcs.bloomu.edu/~bobmon/Semesters/2012-01/491/import%20soul.png)
-
-    """
-    )
-
-    dag.doc_md = __doc__  # providing that you have a docstring at the beggining of the DAG
+    dag.doc_md = __doc__
     dag.doc_md = """
-    This is a documentation placed anywhere
+    Spark job is converting data from Parquet to Avro
     """  # otherwise, type it like this
-    templated_command = dedent(
-        """
-    {% for i in range(5) %}
-        echo "{{ ds }}"
-        echo "{{ macros.ds_add(ds, 7)}}"
-        echo "{{ params.my_param }}"
-    {% endfor %}
-    """
-    )
-
-    t3 = BashOperator(
-        task_id='templated',
-        depends_on_past=False,
-        bash_command=templated_command,
-        params={'my_param': 'Parameter I passed in'},
-    )
-
-    t1 >> [t2, t3]
